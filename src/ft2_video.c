@@ -906,7 +906,11 @@ bool setupWindow(void)
 
 	video.vsync60HzPresent = false;
 
+#ifdef __EMSCRIPTEN__
+	uint32_t windowFlags = 0; // high-DPI would double the canvas backing store
+#else
 	uint32_t windowFlags = SDL_WINDOW_ALLOW_HIGHDPI;
+#endif
 #if defined (__APPLE__) || defined (_WIN32) // yet another quirk!
 	windowFlags |= SDL_WINDOW_HIDDEN;
 #endif

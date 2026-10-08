@@ -28,10 +28,11 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#else
+#elif !defined(WASM_BUILD)
 #include <iconv.h>
 #endif
 #include "ft2_unicode.h"
+
 
 #ifdef _WIN32
 
@@ -245,9 +246,60 @@ char *unicharToCp850(UNICHAR *src, bool removeIllegalChars)
 	return x;
 }
 
+#elif defined(WASM_BUILD)
+
+// WASM routines - simplified versions that work without iconv
+// For ASCII paths (common in WASM), UTF-8 and CP850 are identical
+
+char *cp850ToUtf8(char *src)
+{
+	if (src == NULL)
+		return NULL;
+
+	size_t srcLen = strlen(src);
+	if (srcLen <= 0)
+		return NULL;
+
+	// For WASM, we assume paths are ASCII-compatible
+	// ASCII is identical in both UTF-8 and CP850
+	return strdup(src);
+}
+
+char *utf8ToCp850(char *src, bool removeIllegalChars)
+{
+	if (src == NULL)
+		return NULL;
+
+	size_t srcLen = strlen(src);
+	if (srcLen <= 0)
+		return NULL;
+
+	// For WASM, we assume paths are ASCII-compatible
+	char *outBuf = strdup(src);
+	if (outBuf == NULL)
+		return NULL;
+
+	if (removeIllegalChars)
+	{
+		// remove illegal characters (only allow certain nordic ones)
+		for (size_t i = 0; i < srcLen; i++)
+		{
+			const int8_t ch = (const int8_t)outBuf[i];
+			if (ch != '\0' && ch < 32 &&
+			    ch != -124 && ch != -108 && ch != -122 && ch != -114 && ch != -103 &&
+			    ch != -113 && ch != -101 && ch != -99 && ch != -111 && ch != -110)
+			{
+				outBuf[i] = ' '; // character not allowed, turn it into space
+			}
+		}
+	}
+
+	return outBuf;
+}
+
 #else
 
-// non-Windows routines
+// non-Windows routines (using iconv)
 char *cp850ToUtf8(char *src)
 {
 	if (src == NULL)

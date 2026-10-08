@@ -845,6 +845,31 @@ void updateMouseScaling(void)
 
 void readMouseXY(void)
 {
+#ifdef __EMSCRIPTEN__
+	// In WASM builds, mouse coordinates are updated by JavaScript (ft2_mouse_web.c)
+	// via ft2_mouse_move(), ft2_mouse_button_down(), ft2_mouse_button_up().
+	// We skip SDL_GetMouseState() which doesn't work correctly in Emscripten,
+	// and only handle software mouse cursor and text box hover changes here.
+
+	if (mouse.setPosFlag)
+	{
+		mouse.setPosFlag = false;
+		return;
+	}
+
+	if (config.specialFlags2 & HARDWARE_MOUSE)
+	{
+		// hardware mouse mode (OS)
+		hideSprite(SPRITE_MOUSE_POINTER);
+	}
+	else
+	{
+		// software mouse mode (FT2 mouse)
+		setSpritePos(SPRITE_MOUSE_POINTER, mouse.x + mouse.xBias, mouse.y + mouse.yBias);
+	}
+
+	changeCursorIfOverTextBoxes();
+#else
 	int32_t mx, my, windowX, windowY;
 
 	if (mouse.setPosFlag)
@@ -938,4 +963,5 @@ void readMouseXY(void)
 	}
 
 	changeCursorIfOverTextBoxes();
+#endif
 }

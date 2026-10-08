@@ -680,6 +680,10 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
 // If the checkBoxCallback argument is set, then you get a "Do not show again" checkbox.
 int16_t okBoxThreadSafe(int16_t type, const char *headline, const char *text, void (*checkBoxCallback)(void))
 {
+#ifdef WASM_BUILD
+	// no threads in WASM: "threads" run on the main thread, so show the box directly
+	return okBox(type, headline, text, checkBoxCallback);
+#else
 	if (!editor.mainLoopOngoing)
 		return 0; // main loop was not even started yet, bail out.
 
@@ -700,6 +704,7 @@ int16_t okBoxThreadSafe(int16_t type, const char *headline, const char *text, vo
 		SDL_Delay(waitTime);
 
 	return okBoxData.returnData;
+#endif
 }
 
 static bool askQuit_RandomMsg(void)
