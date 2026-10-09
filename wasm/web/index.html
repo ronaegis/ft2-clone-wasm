@@ -1,0 +1,759 @@
+<!--
+  FastTracker 2 Clone - WebAssembly Version
+  Copyright (c) 2016-2025, Olav Sørensen
+
+  Licensed under the BSD 3-Clause License.
+  See LICENSE file in the project root for full license information.
+
+  https://github.com/8bitbubsy/ft2-clone
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>FastTracker 2 Clone</title>
+
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.modarchive.org https://modland.com; worker-src 'self' blob:; img-src 'self' data:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="ft2-clone.css">
+</head>
+<body>
+    <div id="ft2-container">
+        <header id="ft2-header">
+            <div class="brand">
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="brand-gradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#8b6cff"/>
+                            <stop offset="1" stop-color="#2dd4ee"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="32" height="32" rx="9" fill="url(#brand-gradient)"/>
+                    <path d="M9 21v-6M14 21V10M19 21v-8M24 21v-4" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+                </svg>
+                <div class="brand-text">
+                    <h1>FastTracker 2</h1>
+                    <p>The classic tracker, running in your browser</p>
+                </div>
+            </div>
+
+            <nav id="header-buttons" aria-label="Tracker actions">
+                <div id="sample-module-container" class="menu">
+                    <button id="load-sample-btn" class="btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="sample-module-dropdown">
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5V3.2l7-1.4v9.2"/><circle cx="4" cy="12.5" r="2"/><circle cx="11" cy="11" r="2"/></svg>
+                        <span class="btn-label">Sample modules</span>
+                        <svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+                    </button>
+                    <div id="sample-module-dropdown" class="menu-list" role="menu" hidden>
+                        <p class="menu-title">Play a module</p>
+                        <button class="dropdown-item" type="button" role="menuitem" data-url="https://api.modarchive.org/downloads.php?moduleid=182049#h0ffman_-_everyway.mod" data-filename="h0ffman_-_everyway.mod">
+                            <span class="module-art" aria-hidden="true"></span>
+                            <span class="module-text">
+                                <span class="module-name">Everyway</span>
+                                <span class="module-source">h0ffman · The Mod Archive</span>
+                            </span>
+                            <span class="module-format">MOD</span>
+                        </button>
+                        <button class="dropdown-item" type="button" role="menuitem" data-url="https://api.modarchive.org/downloads.php?moduleid=61504#sunshine.xm" data-filename="sunshine.xm">
+                            <span class="module-art" aria-hidden="true"></span>
+                            <span class="module-text">
+                                <span class="module-name">Sunshine</span>
+                                <span class="module-source">The Mod Archive</span>
+                            </span>
+                            <span class="module-format">XM</span>
+                        </button>
+                        <button class="dropdown-item" type="button" role="menuitem" data-url="https://api.modarchive.org/downloads.php?moduleid=3#1funk.xm" data-filename="1funk.xm">
+                            <span class="module-art" aria-hidden="true"></span>
+                            <span class="module-text">
+                                <span class="module-name">1 Funk</span>
+                                <span class="module-source">The Mod Archive</span>
+                            </span>
+                            <span class="module-format">XM</span>
+                        </button>
+                        <button class="dropdown-item" type="button" role="menuitem" data-url="https://modland.com/pub/modules/Fasttracker%202/Zabutom/broken%20words.xm" data-filename="broken_words.xm">
+                            <span class="module-art" aria-hidden="true"></span>
+                            <span class="module-text">
+                                <span class="module-name">Zabutom - Broken Words</span>
+                                <span class="module-source">Modland</span>
+                            </span>
+                            <span class="module-format">XM</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="shortcuts-btn" class="btn" type="button" title="Keyboard shortcuts">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8" rx="1.5"/><path d="M4 6.7h.01M6.7 6.7h.01M9.3 6.7h.01M12 6.7h.01M5 9.5h6"/></svg>
+                    <span class="btn-label">Shortcuts</span>
+                </button>
+
+                <button id="fullscreen-btn" class="btn btn-icon" type="button" title="Fullscreen (Alt+Enter)" aria-label="Toggle fullscreen">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>
+                </button>
+
+                <a id="github-link" class="btn btn-icon" href="https://github.com/ronaegis/ft2-clone-wasm" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub">
+                    <svg class="icon-solid" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38l-.01-1.49c-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.2c0 .21.15.46.55.38A8 8 0 0 0 8 .2Z"/></svg>
+                </a>
+
+                <button id="load-module-btn" class="btn btn-primary" type="button" title="Open a module, instrument or sample from your computer">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10.5v-8M4.8 5.4 8 2.2l3.2 3.2M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2"/></svg>
+                    <span class="btn-label">Open file</span>
+                </button>
+            </nav>
+        </header>
+
+        <main id="ft2-display">
+            <div id="ft2-stage">
+                <canvas id="ft2-canvas" width="632" height="400"></canvas>
+
+                <!-- Boot progress -->
+                <div id="loading-overlay" class="loading-overlay" role="status">
+                    <div class="loading-content">
+                        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" rx="9" fill="url(#brand-gradient)"/>
+                            <path d="M9 21v-6M14 21V10M19 21v-8M24 21v-4" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+                        </svg>
+                        <p id="loading-message">Starting FastTracker 2</p>
+                        <div class="progress indeterminate"><div class="progress-fill"></div></div>
+                        <p id="loading-submessage" class="loading-submessage"></p>
+                    </div>
+                </div>
+
+                <!-- File/download progress -->
+                <div id="load-status" class="load-status" role="status" aria-live="polite" hidden>
+                    <span class="load-status-icon" aria-hidden="true"></span>
+                    <div class="load-status-main">
+                        <div class="load-status-row">
+                            <span id="load-status-title" class="load-status-title"></span>
+                            <span id="load-status-detail" class="load-status-detail"></span>
+                        </div>
+                        <div id="load-status-progress" class="progress"><div id="load-status-fill" class="progress-fill"></div></div>
+                    </div>
+                    <button id="load-status-close" class="load-status-close" type="button" aria-label="Dismiss" hidden>&times;</button>
+                </div>
+
+                <div id="drop-hint" class="drop-hint" aria-hidden="true">
+                    <span>
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.6 8 10.8l3.2-3.2M2.5 12.5v0a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1"/></svg>
+                        Drop to load
+                    </span>
+                </div>
+            </div>
+        </main>
+
+        <footer id="ft2-footer">
+            <div id="now-loaded" class="chip chip-status">
+                <span class="chip-dot" aria-hidden="true"></span>
+                <span id="now-loaded-name">No module loaded</span>
+            </div>
+
+            <ul class="hints">
+                <li>Drop files onto the tracker to load them</li>
+                <li><kbd>Space</kbd> play / stop</li>
+                <li>Saved files download to your computer</li>
+            </ul>
+
+            <span class="credits">FT2 clone by <a href="https://github.com/8bitbubsy/ft2-clone" rel="noopener">Olav “8bitbubsy” Sørensen</a> · <a href="https://github.com/ronaegis/ft2-clone-wasm" rel="noopener">WebAssembly port on GitHub</a></span>
+        </footer>
+
+        <input type="file" id="module-file" hidden>
+    </div>
+
+    <!-- Error dialog -->
+    <div id="error-modal" class="modal hidden" role="alertdialog" aria-modal="true" aria-labelledby="error-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="error-modal-title">Error</h2>
+                <button class="modal-close" type="button" data-close="error-modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-modal-message"></p>
+                <details id="error-modal-details" class="error-details">
+                    <summary>Technical details</summary>
+                    <pre id="error-modal-stack"></pre>
+                </details>
+            </div>
+            <div class="modal-footer">
+                <button id="error-modal-retry" class="btn btn-primary" type="button" hidden>Reload</button>
+                <button class="btn" type="button" data-close="error-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard shortcuts -->
+    <div id="keyboard-shortcuts" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+                <button class="modal-close" type="button" data-close="keyboard-shortcuts" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body shortcuts-grid">
+                <section>
+                    <h3>Playback</h3>
+                    <dl>
+                        <div><dt><kbd>Space</kbd></dt><dd>Play / stop</dd></div>
+                        <div><dt><kbd>Right Ctrl</kbd></dt><dd>Play song</dd></div>
+                        <div><dt><kbd>Right Alt</kbd></dt><dd>Play pattern</dd></div>
+                        <div><dt><kbd>Right Shift</kbd></dt><dd>Record pattern</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>−</kbd> / <kbd>+</kbd></dt><dd>Volume down / up</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Navigation</h3>
+                    <dl>
+                        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Move up / down</dd></div>
+                        <div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Cursor left / right</dd></div>
+                        <div><dt><kbd>Tab</kbd></dt><dd>Next track (<kbd>Shift</kbd> for previous)</dd></div>
+                        <div><dt><kbd>Page Up</kbd> <kbd>Page Down</kbd></dt><dd>Jump 16 rows</dd></div>
+                        <div><dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>Start / end of pattern</dd></div>
+                        <div><dt><kbd>Shift</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Previous / next instrument</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Pattern editing</h3>
+                    <dl>
+                        <div><dt><kbd>Insert</kbd></dt><dd>Insert note (<kbd>Shift</kbd> for line)</dd></div>
+                        <div><dt><kbd>Backspace</kbd></dt><dd>Delete note (<kbd>Shift</kbd> for line)</dd></div>
+                        <div><dt><kbd>`</kbd></dt><dd>Increase edit skip (<kbd>Shift</kbd> to decrease)</dd></div>
+                        <div><dt><kbd>F1</kbd>–<kbd>F8</kbd></dt><dd>Set octave 0–7</dd></div>
+                        <div><dt><kbd>Alt</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Mark block</dd></div>
+                        <div><dt><kbd>Alt</kbd> <kbd>C</kbd></dt><dd>Mark current track</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Clipboard</h3>
+                    <dl>
+                        <div><dt><kbd>Shift</kbd> <kbd>F3</kbd>–<kbd>F5</kbd></dt><dd>Cut / copy / paste track</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>F3</kbd>–<kbd>F5</kbd></dt><dd>Cut / copy / paste pattern</dd></div>
+                        <div><dt><kbd>Alt</kbd> <kbd>F3</kbd>–<kbd>F5</kbd></dt><dd>Cut / copy / paste block</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Bookmarks</h3>
+                    <dl>
+                        <div><dt><kbd>F9</kbd>–<kbd>F12</kbd></dt><dd>Jump to bookmark</dd></div>
+                        <div><dt><kbd>Shift</kbd> <kbd>F9</kbd>–<kbd>F12</kbd></dt><dd>Set bookmark</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>F9</kbd>–<kbd>F12</kbd></dt><dd>Play from bookmark</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Screens</h3>
+                    <dl>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>A</kbd></dt><dd>Advanced edit</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>B</kbd></dt><dd>About</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>C</kbd></dt><dd>Config</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>D</kbd></dt><dd>Disk op.</dd></div>
+                        <div><dt><kbd>Ctrl</kbd> <kbd>E</kbd></dt><dd>Sample editor</dd></div>
+                        <div><dt><kbd>Alt</kbd> <kbd>Enter</kbd></dt><dd>Fullscreen</dd></div>
+                    </dl>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCREEN_W = 632, SCREEN_H = 400;
+
+        let ft2Module = null;
+        let renderLoop = null;
+
+        const $ = (id) => document.getElementById(id);
+
+        // ====================================================================
+        // Dialogs
+        // ====================================================================
+
+        function showModal(id) { $(id).classList.remove('hidden'); }
+        function hideModal(id) { $(id).classList.add('hidden'); }
+        function openModal() { return document.querySelector('.modal:not(.hidden)'); }
+
+        function showErrorModal(title, message, technicalDetails, retryCallback) {
+            $('error-modal-title').textContent = title;
+            $('error-modal-message').textContent = message;
+            $('error-modal-stack').textContent = technicalDetails || '';
+            $('error-modal-details').hidden = !technicalDetails;
+            $('error-modal-retry').hidden = !retryCallback;
+            $('error-modal-retry').onclick = retryCallback || null;
+            hideLoadingOverlay();
+            showModal('error-modal');
+        }
+
+        function setupModals() {
+            document.querySelectorAll('[data-close]').forEach((el) => {
+                el.addEventListener('click', () => hideModal(el.dataset.close));
+            });
+
+            // click on the backdrop closes
+            document.querySelectorAll('.modal').forEach((modal) => {
+                modal.addEventListener('mousedown', (e) => { if (e.target === modal) hideModal(modal.id); });
+            });
+
+            $('shortcuts-btn').addEventListener('click', () => showModal('keyboard-shortcuts'));
+
+            // While a page dialog is open the keyboard belongs to it, not to the tracker
+            const swallowKeys = (e) => {
+                const modal = openModal();
+                if (!modal) return;
+                e.stopImmediatePropagation();
+                if (e.type === 'keydown' && e.key === 'Escape') hideModal(modal.id);
+            };
+            window.addEventListener('keydown', swallowKeys, true);
+            window.addEventListener('keyup', swallowKeys, true);
+            window.addEventListener('keypress', swallowKeys, true);
+        }
+
+        window.addEventListener('error', function(event) {
+            console.error('Global error caught:', event.error);
+            showErrorModal(
+                'Something went wrong',
+                'An unexpected error occurred. Reloading the page usually fixes it.',
+                event.error ? (event.error.stack || event.error.message) : event.message,
+                () => window.location.reload()
+            );
+            return true;
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            showErrorModal(
+                'Something went wrong',
+                'An operation failed unexpectedly. Reloading the page usually fixes it.',
+                event.reason ? (event.reason.stack || event.reason.message || String(event.reason)) : 'Unknown error',
+                () => window.location.reload()
+            );
+            event.preventDefault();
+        });
+
+        // ====================================================================
+        // Progress display
+        // ====================================================================
+
+        function showLoadingOverlay(message, submessage) {
+            $('loading-message').textContent = message;
+            $('loading-submessage').textContent = submessage || '';
+            $('loading-overlay').classList.remove('hidden');
+        }
+
+        function hideLoadingOverlay() {
+            $('loading-overlay').classList.add('hidden');
+        }
+
+        const formatSize = (bytes) => bytes < 1024 * 1024
+            ? Math.max(1, Math.round(bytes / 1024)) + ' KB'
+            : (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+
+        // The bar above the tracker that reports downloads and file loads
+        const loadStatus = {
+            hideTimer: null,
+
+            // fraction: 0..1, or null when the total size is unknown
+            show(title, detail, fraction) {
+                clearTimeout(this.hideTimer);
+                const el = $('load-status');
+                el.classList.remove('is-error', 'is-done', 'is-leaving');
+                el.hidden = false;
+                $('load-status-title').textContent = title;
+                $('load-status-detail').textContent = detail || '';
+                $('load-status-close').hidden = true;
+                $('load-status-progress').hidden = false;
+                $('load-status-progress').classList.toggle('indeterminate', fraction === null);
+                $('load-status-fill').style.width = fraction === null ? '' : Math.round(fraction * 100) + '%';
+            },
+
+            done(title) {
+                this.show(title, '', 1);
+                $('load-status').classList.add('is-done');
+                $('load-status-progress').hidden = true;
+                this.hideTimer = setTimeout(() => this.hide(), 1400);
+            },
+
+            error(title, detail) {
+                clearTimeout(this.hideTimer);
+                const el = $('load-status');
+                el.classList.remove('is-leaving', 'is-done');
+                el.classList.add('is-error');
+                el.hidden = false;
+                $('load-status-title').textContent = title;
+                $('load-status-detail').textContent = detail || '';
+                $('load-status-progress').hidden = true;
+                $('load-status-close').hidden = false;
+            },
+
+            hide() {
+                const el = $('load-status');
+                el.classList.add('is-leaving');
+                this.hideTimer = setTimeout(() => { el.hidden = true; }, 200);
+            },
+        };
+
+        // ====================================================================
+        // Starting the tracker
+        // ====================================================================
+
+        async function loadFT2() {
+            try {
+                showLoadingOverlay('Starting FastTracker 2', 'Downloading the tracker…');
+
+                // The module factory is UMD/CommonJS: load it with a script tag
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = './ft2-wasm.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Failed to load ft2-wasm.js'));
+                    document.head.appendChild(script);
+                });
+
+                if (!window.createFT2Module)
+                    throw new Error('Module factory not available after script load');
+
+                const modulePromise = window.createFT2Module({
+                    canvas: $('ft2-canvas'),
+                    print: (text) => console.log('[FT2] ' + text),
+                    printErr: (text) => console.error('[FT2] ' + text),
+                });
+
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('WASM module initialization timeout (30s)')), 30000);
+                });
+
+                ft2Module = await Promise.race([modulePromise, timeoutPromise]);
+
+                showLoadingOverlay('Starting FastTracker 2', 'Setting up audio and video…');
+
+                // The build uses Asyncify: these must go through ccall with { async: true }
+                if (!await ft2Module.ccall('ft2_init_web', 'boolean', [], [], { async: true }))
+                    throw new Error('ft2_init_web() failed');
+
+                if (!await ft2Module.ccall('ft2_init_full_ui', 'boolean', [], [], { async: true }))
+                    throw new Error('ft2_init_full_ui() failed');
+
+                setupMouseEvents();
+                startRenderLoop();
+                hideLoadingOverlay();
+            } catch (e) {
+                console.error(e);
+                showErrorModal(
+                    'FastTracker 2 could not start',
+                    'The tracker failed to load. Check your connection and that your browser supports WebAssembly, then reload.',
+                    e.stack || e.message,
+                    () => window.location.reload()
+                );
+            }
+        }
+
+        function startRenderLoop() {
+            if (renderLoop) return;
+
+            renderLoop = function() {
+                try {
+                    ft2Module._ft2_render_frame();
+                } catch (e) {
+                    console.error('Render error:', e.message);
+                }
+                requestAnimationFrame(renderLoop);
+            };
+            renderLoop();
+        }
+
+        // ====================================================================
+        // Input
+        // ====================================================================
+
+        function setupMouseEvents() {
+            const canvas = $('ft2-canvas');
+
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+
+            const toCanvasCoords = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                lastMouseX = Math.floor((e.clientX - rect.left) * (SCREEN_W / rect.width));
+                lastMouseY = Math.floor((e.clientY - rect.top) * (SCREEN_H / rect.height));
+                return { x: lastMouseX, y: lastMouseY };
+            };
+
+            canvas.addEventListener('mousemove', (e) => {
+                const { x, y } = toCanvasCoords(e);
+                ft2Module._ft2_mouse_move(x, y, e.buttons);
+            });
+
+            canvas.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const { x, y } = toCanvasCoords(e);
+                ft2Module._ft2_mouse_button_down(e.button, x, y, e.buttons);
+            });
+
+            canvas.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                const { x, y } = toCanvasCoords(e);
+                ft2Module._ft2_mouse_button_up(e.button, x, y, e.buttons);
+            });
+
+            // buttons released outside the canvas must not stay "held" in the tracker
+            window.addEventListener('mouseup', (e) => {
+                if (e.target !== canvas)
+                    ft2Module._ft2_mouse_button_up(e.button ?? 0, lastMouseX, lastMouseY, e.buttons ?? 0);
+            });
+
+            window.addEventListener('blur', () => {
+                for (let button = 0; button < 3; button++)
+                    ft2Module._ft2_mouse_button_up(button, lastMouseX, lastMouseY, 0);
+            });
+
+            canvas.addEventListener('mouseleave', (e) => {
+                ft2Module._ft2_mouse_move(lastMouseX, lastMouseY, e.buttons ?? 0);
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                ft2Module._ft2_mouse_wheel(e.deltaY);
+            }, { passive: false });
+
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function setupFullscreen() {
+            const stage = $('ft2-display');
+
+            const toggle = () => {
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+                } else {
+                    const request = stage.requestFullscreen || stage.webkitRequestFullscreen;
+                    const result = request && request.call(stage);
+                    if (result && result.catch)
+                        result.catch((err) => console.warn('Fullscreen was refused:', err.message));
+                }
+            };
+
+            $('fullscreen-btn').addEventListener('click', toggle);
+
+            // Capture phase: intercept Alt+Enter before SDL sees it
+            document.addEventListener('keydown', (e) => {
+                if (e.altKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggle();
+                }
+            }, true);
+        }
+
+        /* Scale the tracker to fit. Whole device pixels per FT2 pixel look crispest,
+        ** so snap down to that when it costs little size.
+        */
+        function fitCanvas() {
+            const canvas = $('ft2-canvas');
+            const display = $('ft2-display');
+
+            const style = getComputedStyle(display);
+            const bezel = 2 * parseFloat(getComputedStyle($('ft2-stage')).paddingTop);
+            const availableW = display.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - bezel;
+            const availableH = display.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - bezel;
+
+            let scale = Math.max(Math.min(availableW / SCREEN_W, availableH / SCREEN_H), 0.25);
+            const dpr = window.devicePixelRatio || 1;
+            const snapped = Math.floor(scale * dpr) / dpr;
+            if (snapped >= scale * 0.85)
+                scale = snapped;
+
+            canvas.style.width = (SCREEN_W * scale) + 'px';
+            canvas.style.height = (SCREEN_H * scale) + 'px';
+        }
+
+        // ====================================================================
+        // Loading files into the tracker
+        // ====================================================================
+
+        // Hands a file to FT2, which treats it like a file dropped onto the native program
+        async function loadIntoFT2(filename, bytes) {
+            if (!ft2Module || !renderLoop)
+                throw new Error('The tracker is still starting.');
+
+            if (ft2Module._ft2_is_dialog_open())
+                throw new Error('Close the dialog in the tracker first.');
+
+            const path = '/tmp/' + filename.replace(/[\\/]/g, '_');
+            try { ft2Module.FS.mkdir('/tmp'); } catch (e) { /* already there */ }
+            ft2Module.FS.writeFile(path, bytes);
+
+            try {
+                // FT2 reports load errors itself, in a dialog on the canvas
+                await ft2Module.ccall('ft2_load_file', null, ['string'], [path], { async: true });
+            } finally {
+                try { ft2Module.FS.unlink(path); } catch (e) { /* nothing to clean up */ }
+            }
+        }
+
+        function setNowLoaded(name) {
+            $('now-loaded-name').textContent = name;
+            $('now-loaded').classList.add('is-active');
+        }
+
+        async function loadLocalFiles(files) {
+            for (const file of files) {
+                try {
+                    loadStatus.show('Loading ' + file.name, formatSize(file.size), null);
+                    await loadIntoFT2(file.name, new Uint8Array(await file.arrayBuffer()));
+                    loadStatus.done('Loaded ' + file.name);
+                    setNowLoaded(file.name);
+                } catch (e) {
+                    console.warn('Could not load ' + file.name + ':', e);
+                    loadStatus.error('Could not load ' + file.name, e.message);
+                    return;
+                }
+            }
+        }
+
+        // fetch() that reports progress: onProgress(receivedBytes, totalBytes or 0 if unknown)
+        async function download(url, onProgress) {
+            const response = await fetch(url);
+            if (!response.ok)
+                throw new Error('The server answered with HTTP ' + response.status + '.');
+
+            // Content-Length counts compressed bytes, so only trust it for uncompressed responses
+            const total = response.headers.get('Content-Encoding') ? 0 : (Number(response.headers.get('Content-Length')) || 0);
+
+            if (!response.body) {
+                const bytes = new Uint8Array(await response.arrayBuffer());
+                onProgress(bytes.length, bytes.length);
+                return bytes;
+            }
+
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+            onProgress(0, total);
+
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                received += value.length;
+                onProgress(received, total);
+            }
+
+            const bytes = new Uint8Array(received);
+            let offset = 0;
+            for (const chunk of chunks) {
+                bytes.set(chunk, offset);
+                offset += chunk.length;
+            }
+            return bytes;
+        }
+
+        async function loadSampleModule(name, url, filename) {
+            let bytes;
+            try {
+                loadStatus.show('Downloading ' + name, 'Connecting…', null);
+                bytes = await download(url, (received, total) => {
+                    if (total > 0)
+                        loadStatus.show('Downloading ' + name, formatSize(received) + ' of ' + formatSize(total), Math.min(received / total, 1));
+                    else
+                        loadStatus.show('Downloading ' + name, received > 0 ? formatSize(received) : 'Connecting…', null);
+                });
+            } catch (e) {
+                console.warn('Could not download ' + url + ':', e);
+                // fetch() rejects with a TypeError when the host is unreachable or refuses cross-origin requests
+                const reason = e instanceof TypeError ? 'The module archive could not be reached.' : e.message;
+                loadStatus.error('Could not download ' + name, reason);
+                return;
+            }
+
+            try {
+                loadStatus.show('Loading ' + name, formatSize(bytes.length), null);
+                await loadIntoFT2(filename, bytes);
+                loadStatus.done('Now playing ' + name);
+                setNowLoaded(name);
+            } catch (e) {
+                console.warn('Could not load ' + filename + ':', e);
+                loadStatus.error('Could not load ' + name, e.message);
+            }
+        }
+
+        function setupFileLoading() {
+            const fileInput = $('module-file');
+
+            $('load-module-btn').addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', async () => {
+                await loadLocalFiles(fileInput.files);
+                fileInput.value = ''; // so the same file can be picked again
+            });
+
+            $('load-status-close').addEventListener('click', () => loadStatus.hide());
+
+            // Sample module menu
+            const button = $('load-sample-btn');
+            const menu = $('sample-module-dropdown');
+            const setOpen = (open) => {
+                menu.hidden = !open;
+                button.setAttribute('aria-expanded', String(open));
+            };
+
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setOpen(menu.hidden);
+            });
+            document.addEventListener('click', () => setOpen(false));
+
+            let busy = false;
+            menu.querySelectorAll('.dropdown-item').forEach((item) => {
+                item.addEventListener('click', async () => {
+                    if (busy) return;
+                    busy = true;
+                    setOpen(false);
+                    try {
+                        await loadSampleModule(item.querySelector('.module-name').textContent, item.dataset.url, item.dataset.filename);
+                    } finally {
+                        busy = false;
+                    }
+                });
+            });
+
+            // Drag and drop, anywhere on the page
+            let dragDepth = 0;
+            const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files');
+            const setDragging = (on) => document.body.classList.toggle('is-dragging', on);
+
+            window.addEventListener('dragenter', (e) => {
+                if (!hasFiles(e)) return;
+                e.preventDefault();
+                dragDepth++;
+                setDragging(true);
+            });
+            window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+            window.addEventListener('dragleave', (e) => {
+                if (!hasFiles(e)) return;
+                dragDepth = Math.max(0, dragDepth - 1);
+                if (dragDepth === 0) setDragging(false);
+            });
+            window.addEventListener('drop', (e) => {
+                if (!hasFiles(e)) return;
+                e.preventDefault();
+                dragDepth = 0;
+                setDragging(false);
+                loadLocalFiles(e.dataTransfer.files);
+            });
+        }
+
+        // ====================================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupModals();
+            setupFullscreen();
+            setupFileLoading();
+
+            fitCanvas();
+            new ResizeObserver(fitCanvas).observe($('ft2-display'));
+            document.addEventListener('fullscreenchange', fitCanvas);
+
+            loadFT2();
+        });
+    </script>
+</body>
+</html>

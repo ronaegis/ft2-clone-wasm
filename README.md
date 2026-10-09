@@ -1,3 +1,31 @@
+# ft2-clone - WebAssembly port
+
+**Try it in your browser: https://ronaegis.github.io/ft2-clone-wasm/**
+
+This is a fork of [8bitbubsy/ft2-clone](https://github.com/8bitbubsy/ft2-clone) that builds the Fasttracker II clone for the web with Emscripten. The tracker itself is the upstream code; this fork adds what it needs to run on a web page.
+
+## What it does to the upstream code
+
+The upstream sources in `src/` are compiled as they are. The port lives in `wasm/` and adapts them from the outside:
+
+- **Link-time wrappers** (`wasm/src/ft2_wrap_web.c`) replace a few libc/SDL calls without editing the callers:
+  - `fopen`/`fclose`: every file FT2 saves is offered as a browser download, and the config is kept in IndexedDB.
+  - `SDL_CreateThread`: there are no threads, so FT2's worker threads run to completion on the main thread.
+  - `SDL_RenderPresent`/`usleep`: FT2's own blocking loops (its dialogs) yield to the browser each frame, using Asyncify.
+- **Two bridge files** include upstream files to reach what they keep private: `ft2_main.c` without its `main()`, and `scopes/ft2_scopes.c` without its scope thread (scopes are updated once per frame instead).
+- **Four upstream files carry small guards** (89 lines in total):
+  - `ft2_mouse.c`: the mouse position comes from the page, not from SDL.
+  - `ft2_video.c`: no high-DPI window.
+  - `ft2_sysreqs.c`: thread-safe message boxes are shown directly.
+  - `ft2_unicode.c`: paths are passed through, since Emscripten's libc has no CP850 conversion.
+- **Not included:** MIDI (`ft2_midi.c` is left out), touch input, and real threads, so long operations such as WAV rendering block the page until they finish.
+
+Everything else is new and separate from upstream: the web page (`wasm/web`), a headless smoke test (`wasm/tests`), and a CI workflow that builds, tests and deploys the page. See [wasm/README.md](wasm/README.md) for building and embedding.
+
+---
+
+The upstream README follows.
+
 # ft2-clone
 Fasttracker II clone for Windows/macOS/Linux
 
